@@ -16,8 +16,8 @@ proc inFight(target: string, userAgent: string): void =
     session.navigate(target)
     imInFight = false
 
-proc inFightP(target: string, filePth: string): void =
-  discard os.execShellCmd("start " & filePth & " -private -url " & target)
+proc inFightP(target: string, filePth: string, call: string): void =
+  discard os.execShellCmd(call & " " & filePth & " -private -url " & target)
 
 proc imgGrb(conType: string, target: string, targetImg: string, userAgent: string, range: int32, referer: string, timeout = 1200, log = false): bool =
   let client = newHttpClient(timeout = timeout)
@@ -82,6 +82,7 @@ var
   targetImg = "/static-assets/image/pages/home/devices/how-it-works/desktop/search-protection-back-dark.png"
   userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:135.0) Gecko/20100101 Firefox/135.0"
   conType = "https://"
+  call = "start"
   filePth = "C:/\"Program Files (x86)/Mozilla Firefox\"/firefox.exe" #in winDUSE lol
 
 while true:
@@ -97,7 +98,7 @@ while true:
       if userInput == "y":
         spawn inFight(conType & target, userAgent)
       if userInput == "r":
-        spawn inFightP(conType & target, filePth)
+        spawn inFightP(conType & target, filePth, call)
       elif userInput == "n":
         discard
 ]#
