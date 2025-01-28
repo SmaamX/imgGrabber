@@ -5,7 +5,13 @@ var imInFight: bool = false
 proc inFight(target: string, userAgent: string): void =
   {.cast(gcsafe).}:
     imInFight = true
-    let session = createSession(Firefox,browserOptions=chromeOptions(args=["--user-agent=" & userAgent]))
+    let session = createSession(Firefox, browserOptions = %*{
+      "moz:firefoxOptions": {
+        "prefs": {
+          "general.useragent.override": userAgent
+        }
+      }
+    })
     session.navigate(target)
     imInFight = false
 
