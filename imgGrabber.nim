@@ -5,8 +5,6 @@ var imInFight: bool = false
 proc inFight(target: string, userAgent: string): void =
   # this is criminal part
   {.cast(gcsafe).}:
-    runnableExamples:
-      import halonium
     imInFight = true
     let session = createSession(Firefox, browserOptions = %*{
       "moz:firefoxOptions": {
