@@ -43,7 +43,7 @@ proc imgGrb(conType: string, target: string, targetImg: string, userAgent: strin
       echo "An error occurred: ", e.msg
     return false
 
-proc sessionGrb(target: string, port: int32, range: int64, timeout = 1000, log = false) {.async.} =
+proc sessionGrb(target: string, port: int32, timeout = 1000, log = false) {.async.} =
   var socket = newSocket(AF_INET, SOCK_STREAM, IPPROTO_TCP)
   try:
     socket.connect(target, Port(port))
