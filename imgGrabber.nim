@@ -86,7 +86,7 @@ var
   filePth = "C:/\"Program Files (x86)/Mozilla Firefox\"/firefox.exe" #in winDUSE lol
 
 while true:
-  #discard spawn sessionGrb(target, port, range, log = true)
+  discard spawn sessionGrb(target, port, range, log = true)
   var outPass = spawn imgGrb(conType, target, targetImg, userAgent, bitRange, "https://duckduckgo.com/")
   if ^outPass == true:
     bitWast += bitRange
