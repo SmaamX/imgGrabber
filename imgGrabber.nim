@@ -105,7 +105,7 @@ while true:
         echo "Give me your cookie header (like cf_chl_rc_m=2, xf_session=blahblah) ->"
         userInput = stdin.readLine()
         cookieInject = userInput
-        echo "Give me your useragent header (enter for try oldone) ->"
+        echo "Give me your useragent header (enter for try old one) ->"
         userInput = stdin.readLine()
         if userAgent == "":
           discard
