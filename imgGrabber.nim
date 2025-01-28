@@ -102,7 +102,7 @@ while true:
         # soon
       if userInput == "r":
         spawn inFightP(conType & target, filePth, call)
-        echo "Give me your cookie header (like cf_chl_rc_m=2, xf_session=blahblah) ->"
+        echo "Give me your cookie header (like cf_chl_rc_m=2; xf_session=blahblah) ->"
         userInput = stdin.readLine()
         cookieInject = userInput
         echo "Give me your useragent header (enter for try old one) ->"
