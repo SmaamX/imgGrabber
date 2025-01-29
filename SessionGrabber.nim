@@ -11,7 +11,7 @@ proc winFix(enable: bool): void =
   finally:
     close(h)
 
-proc stealthyConnection(target: string, port: Port, delay: int) {.async.} =
+proc SessionGrb1(target: string, port: Port, delay: int) {.async.} =
   var socket = newAsyncSocket()
   try:
     await socket.connect(target, port)
